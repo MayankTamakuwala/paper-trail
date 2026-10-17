@@ -8,6 +8,10 @@
   --accent-soft: #f0e7d8;
   --danger: #a3332b;
   --ok: #2f6b4a;
+
+  --priority-high: #c44646;
+  --priority-medium: #a46646;
+  --priority-low: #8a8a8a;
   --radius: 8px;
 }
 

@@ -1,0 +1,124 @@
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  align-items: end;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-family: system-ui, sans-serif;
+}
+
+.field--wide {
+  grid-column: span 4;
+}
+
+.field--half {
+  grid-column: span 2;
+}
+
+.field--actions {
+  grid-column: span 4;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.field label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.field input,
+.field select,
+.field textarea {
+  font-family: system-ui, sans-serif;
+  font-size: 0.94rem;
+  padding: 9px 11px;
+  border: 1px solid #cdc8bd;
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--ink);
+  width: 100%;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.field__hint {
+  font-size: 0.74rem;
+  color: var(--ink-soft);
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+}
+
+.button {
+  font-family: system-ui, sans-serif;
+  font-size: 0.9rem;
+  padding: 9px 18px;
+  border-radius: 6px;
+  border: 1px solid #cdc8bd;
+  background: #ffffff;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.button:hover {
+  border-color: var(--accent);
+}
+
+.button[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.button--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.button--primary:hover {
+  background: #644a22;
+}
+
+.button--danger {
+  color: var(--danger);
+  border-color: #e0c4c1;
+}
+
+.button--danger:hover {
+  background: #fbf0ef;
+  border-color: var(--danger);
+}
+
+.form-error {
+  font-family: system-ui, sans-serif;
+  font-size: 0.88rem;
+  color: var(--danger);
+  background: #fbf0ef;
+  border: 1px solid #e8cdca;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 14px 0 0;
+}
+
+@media (max-width: 720px) {
+  .field-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .field--wide,
+  .field--actions,
+  .field--half {
+    grid-column: span 2;
+  }
+}
