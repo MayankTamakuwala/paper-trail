@@ -60,9 +60,10 @@ work surfaces first. Each result has an "Add to reading list" button, which copi
 paper straight into your queue without retyping it. You can also add papers the catalog is
 missing through a dialog, correct metadata that came through wrong, and delete duplicates.
 
-The two collections stay independent. A reading list entry stores its own copy of the paper
-details rather than pointing at a catalog record, so neither page breaks if the other
-collection is empty, and nothing has to be joined at read time.
+The two are fully independent. A reading list entry stores its own copy of the paper
+details rather than pointing at a catalog record, so nothing is joined at read time and
+neither page breaks if the other collection is empty. The catalog's "add to reading list"
+button is a convenience on top of that, not a link between them.
 
 ## Running it locally
 
@@ -180,7 +181,7 @@ which the frontend generates once and keeps in `localStorage`.
 The `papers` collection holds the seeded catalog. `readingList` holds per user entries,
 each with a `userId`, a status, a priority, tags and the note. Reading list entries carry
 their own copy of the paper's title, authors and year rather than referencing a paper by
-id, which is what keeps the two halves independent.
+id, so the two collections are fully independent of each other.
 
 Deployment is a single Vercel project. `public/` is served as static files and
 `api/index.js` runs Express as a serverless function, with a rewrite in `vercel.json`
