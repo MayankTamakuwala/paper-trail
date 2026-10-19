@@ -88,9 +88,8 @@ export function validateEntry(body, { partial = false } = {}) {
     entry.title = title;
   }
 
-  const authors = text(body.authors, "Authors", { max: 300 });
-  if (authors !== undefined) {
-    entry.authors = authors;
+  if (!partial || body.authors !== undefined) {
+    entry.authors = stringList(body.authors, 50, 120);
   }
 
   const venue = text(body.venue, "Venue", { max: 200 });

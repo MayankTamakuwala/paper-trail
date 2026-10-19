@@ -12,6 +12,18 @@ const NEXT_STATUS = {
   read: "to-read",
 };
 
+function shortAuthors(authors) {
+  if (!Array.isArray(authors) || authors.length === 0) {
+    return "";
+  }
+
+  if (authors.length <= 3) {
+    return authors.join(", ");
+  }
+
+  return authors.slice(0, 3).join(", ") + " et al";
+}
+
 export function entryRow(entry, { onEdit, onDelete, onAdvance }) {
   const item = el("li", "entry");
   item.dataset.priority = entry.priority || "medium";
@@ -24,7 +36,7 @@ export function entryRow(entry, { onEdit, onDelete, onAdvance }) {
   head.appendChild(badge);
   item.appendChild(head);
 
-  const details = [entry.authors, entry.year, entry.venue].filter(Boolean);
+  const details = [shortAuthors(entry.authors), entry.year, entry.venue].filter(Boolean);
   if (details.length > 0) {
     item.appendChild(el("p", "entry__meta", details.join(" · ")));
   }

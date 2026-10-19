@@ -37,7 +37,7 @@ function resetForm() {
 function fillForm(entry) {
   idField.value = entry._id;
   form.title.value = entry.title || "";
-  form.authors.value = entry.authors || "";
+  form.authors.value = Array.isArray(entry.authors) ? entry.authors.join(", ") : "";
   form.year.value = entry.year || "";
   form.venue.value = entry.venue || "";
   form.status.value = entry.status || "to-read";
