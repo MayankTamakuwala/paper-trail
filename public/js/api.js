@@ -53,3 +53,25 @@ export function updateEntry(id, patch) {
 export function deleteEntry(id) {
   return request("/reading-list/" + id, { method: "DELETE" });
 }
+
+// ---- Papers catalog (Varshith) ----
+
+export function getPapers(params = {}) {
+  return request("/papers" + toQuery(params));
+}
+
+export function getPaperFields() {
+  return request("/papers/meta/fields");
+}
+
+export function createPaper(paper) {
+  return request("/papers", { method: "POST", body: paper });
+}
+
+export function updatePaper(id, patch) {
+  return request("/papers/" + id, { method: "PUT", body: patch });
+}
+
+export function deletePaper(id) {
+  return request("/papers/" + id, { method: "DELETE" });
+}
