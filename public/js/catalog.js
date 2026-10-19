@@ -7,7 +7,7 @@ import {
   createEntry,
   getEntries,
 } from "./api.js";
-import { paperCard, shortAuthors } from "./components/paper-card.js";
+import { paperCard } from "./components/paper-card.js";
 import { el, clear, setStatus } from "./dom.js";
 
 const searchForm = document.getElementById("search-form");
@@ -179,7 +179,7 @@ function onClear() {
 function toEntry(paper) {
   return {
     title: paper.title,
-    authors: shortAuthors(paper.authors).slice(0, 300),
+    authors: paper.authors,
     year: paper.year ? String(paper.year) : "",
     venue: (paper.venue || "").slice(0, 200),
     status: "to-read",
