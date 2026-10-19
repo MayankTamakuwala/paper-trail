@@ -61,18 +61,55 @@ function oneOf(value, allowed, label, fallback) {
   return value;
 }
 
-function stringList(value, max, maxLength) {
+function stringList(value, label, { max, maxLength }) {
   if (value === undefined || value === null || value === "") {
     return [];
   }
 
+  if (typeof value === "object" && !Array.isArray(value)) {
+    throw new ValidationError(
+      label + " must be a list of names or a comma separated line"
+    );
+  }
+
   const raw = Array.isArray(value) ? value : String(value).split(",");
+  const seen = new Set();
+  const cleaned = [];
 
-  const cleaned = raw
-    .map((item) => String(item).trim())
-    .filter((item) => item.length > 0 && item.length <= maxLength);
+  raw.forEach((item) => {
+    if (typeof item !== "string" && typeof item !== "number") {
+      throw new ValidationError(
+        label + " must be a list of names or a comma separated line"
+      );
+    }
 
-  return Array.from(new Set(cleaned)).slice(0, max);
+    const trimmed = String(item).trim();
+
+    if (trimmed.length === 0) {
+      return;
+    }
+
+    if (trimmed.length > maxLength) {
+      throw new ValidationError(
+        "Each entry in " + label + " must be " + maxLength + " characters or fewer"
+      );
+    }
+
+    const key = trimmed.toLowerCase();
+
+    if (seen.has(key)) {
+      return;
+    }
+
+    seen.add(key);
+    cleaned.push(trimmed);
+  });
+
+  if (cleaned.length > max) {
+    throw new ValidationError(label + " cannot have more than " + max + " entries");
+  }
+
+  return cleaned;
 }
 
 export function validateEntry(body, { partial = false } = {}) {
@@ -89,7 +126,7 @@ export function validateEntry(body, { partial = false } = {}) {
   }
 
   if (!partial || body.authors !== undefined) {
-    entry.authors = stringList(body.authors, 50, 120);
+    entry.authors = stringList(body.authors, "Authors", { max: 50, maxLength: 120 });
   }
 
   const venue = text(body.venue, "Venue", { max: 200 });
@@ -117,7 +154,9 @@ export function validateEntry(body, { partial = false } = {}) {
   }
 
   if (!partial || body.tags !== undefined) {
-    entry.tags = stringList(body.tags, 10, 30).map((tag) => tag.toLowerCase());
+    entry.tags = stringList(body.tags, "Tags", { max: 10, maxLength: 30 }).map((tag) =>
+      tag.toLowerCase()
+    );
   }
 
   if (partial && Object.keys(entry).length === 0) {
@@ -161,11 +200,11 @@ export function validatePaper(body, { partial = false } = {}) {
   }
 
   if (body.authors !== undefined) {
-    paper.authors = stringList(body.authors, 50, 120);
+    paper.authors = stringList(body.authors, "Authors", { max: 50, maxLength: 120 });
   }
 
   if (body.fields !== undefined) {
-    paper.fields = stringList(body.fields, 10, 80);
+    paper.fields = stringList(body.fields, "Fields", { max: 10, maxLength: 80 });
   }
 
   if (partial && Object.keys(paper).length === 0) {
