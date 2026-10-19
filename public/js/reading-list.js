@@ -149,7 +149,7 @@ function renderEmpty() {
   const hint = el("p", "empty__hint", "Or load a few samples to see how the list works.");
   empty.appendChild(hint);
 
-  const button = el("button", "button", "Load a few samples");
+  const button = el("button", "button button--primary", "Load a few samples");
   button.type = "button";
   button.addEventListener("click", () => loadSamples(button));
   empty.appendChild(button);
