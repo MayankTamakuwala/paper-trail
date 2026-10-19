@@ -1,3 +1,5 @@
+const STRUCTURAL_CHARS = /[[\]{}"<>]/;
+
 const STATUSES = ["to-read", "reading", "read"];
 const PRIORITIES = ["high", "medium", "low"];
 const PRIORITY_RANK = { high: 0, medium: 1, low: 2 };
@@ -92,6 +94,13 @@ function stringList(value, label, { max, maxLength }) {
     if (trimmed.length > maxLength) {
       throw new ValidationError(
         "Each entry in " + label + " must be " + maxLength + " characters or fewer"
+      );
+    }
+
+    if (STRUCTURAL_CHARS.test(trimmed)) {
+      throw new ValidationError(
+        label +
+          " must be plain text separated by commas, without brackets, braces or quotes"
       );
     }
 
