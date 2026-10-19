@@ -11,6 +11,16 @@ Mayank Tamakuwala and Varshith Sai Pothula
 Built for [CS 5610 Web Development](https://northeastern.instructure.com/courses/261032),
 Khoury College, Northeastern University, Fall 2026.
 
+### Latest commits
+
+| Author               | Latest work                       | Eastern                          | Pacific                          |
+| -------------------- | --------------------------------- | -------------------------------- | -------------------------------- |
+| Mayank Tamakuwala    | `299ca97` plus this README commit | October 19, 2026 at 2:31 PM EDT  | October 19, 2026 at 11:31 AM PDT |
+| Varshith Sai Pothula | `d42c5fb` Updated Catalog         | October 19, 2026 at 12:58 PM EDT | October 19, 2026 at 9:58 AM PDT  |
+
+The times shown are for the named commits. Pacific is PDT rather than PST on this date,
+since daylight saving runs until early November.
+
 ## Objective
 
 Finding papers is a solved problem. Scholar, arXiv and a dozen other tools will hand you
