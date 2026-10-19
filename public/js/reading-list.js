@@ -13,6 +13,49 @@ const statusLine = document.getElementById("status");
 const sortSelect = document.getElementById("sort");
 const filterButtons = Array.from(document.querySelectorAll(".chip"));
 
+const SAMPLES = [
+  {
+    title: "Attention Is All You Need",
+    authors: "Ashish Vaswani, Noam Shazeer, Niki Parmar",
+    year: 2017,
+    venue: "NeurIPS",
+    status: "to-read",
+    priority: "high",
+    tags: "transformers, nlp",
+    note: "Might make section 3.2 unnecessary. Check before rewriting that part.",
+  },
+  {
+    title: "Deep Residual Learning for Image Recognition",
+    authors: "Kaiming He, Xiangyu Zhang, Shaoqing Ren, Jian Sun",
+    year: 2016,
+    venue: "CVPR",
+    status: "reading",
+    priority: "medium",
+    tags: "cv, resnet",
+    note: "Need the exact degradation argument for the introduction.",
+  },
+  {
+    title: "Language Models are Few-Shot Learners",
+    authors: "Tom Brown, Benjamin Mann, Nick Ryder",
+    year: 2020,
+    venue: "NeurIPS",
+    status: "read",
+    priority: "low",
+    tags: "llm, scaling",
+    note: "Cite for the scaling curve only. The evaluation section is weaker than I remembered.",
+  },
+  {
+    title: "BERT: Pre-training of Deep Bidirectional Transformers",
+    authors: "Jacob Devlin, Ming-Wei Chang, Kenton Lee, Kristina Toutanova",
+    year: 2019,
+    venue: "NAACL",
+    status: "to-read",
+    priority: "medium",
+    tags: "nlp, pretraining",
+    note: "Background for the related work section. Skim the ablations.",
+  },
+];
+
 const state = { status: "", sort: "newest", counts: null };
 
 function showError(message) {
@@ -74,12 +117,43 @@ function summary() {
   );
 }
 
+async function loadSamples(button) {
+  button.disabled = true;
+  button.textContent = "Adding...";
+
+  try {
+    for (const sample of SAMPLES) {
+      await createEntry(sample);
+    }
+    await load();
+  } catch (error) {
+    button.disabled = false;
+    button.textContent = "Load a few samples";
+    setStatus(statusLine, "Could not add the samples. " + error.message, true);
+  }
+}
+
 function renderEmpty() {
   const empty = el("li", "empty");
-  const message = state.status
-    ? "Nothing in this status yet."
-    : "Your list is empty. Add the first paper using the form above.";
-  empty.appendChild(el("p", "", message));
+
+  if (state.status) {
+    empty.appendChild(el("p", "", "Nothing in this status yet."));
+    entriesList.appendChild(empty);
+    return;
+  }
+
+  empty.appendChild(
+    el("p", "", "Your list is empty. Add a paper using the form above to get started.")
+  );
+
+  const hint = el("p", "empty__hint", "Or load a few samples to see how the list works.");
+  empty.appendChild(hint);
+
+  const button = el("button", "button", "Load a few samples");
+  button.type = "button";
+  button.addEventListener("click", () => loadSamples(button));
+  empty.appendChild(button);
+
   entriesList.appendChild(empty);
 }
 

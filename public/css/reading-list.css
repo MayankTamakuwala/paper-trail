@@ -52,3 +52,8 @@
 .empty p {
   margin: 0;
 }
+
+.empty__hint {
+  margin: 10px 0 14px;
+  font-size: 0.88rem;
+}
