@@ -4,8 +4,10 @@ import {
   createPaper,
   updatePaper,
   deletePaper,
+  createEntry,
+  getEntries,
 } from "./api.js";
-import { paperCard } from "./components/paper-card.js";
+import { paperCard, shortAuthors } from "./components/paper-card.js";
 import { el, clear, setStatus } from "./dom.js";
 
 const searchForm = document.getElementById("search-form");
@@ -13,15 +15,17 @@ const searchError = document.getElementById("search-error");
 const fieldSelect = document.getElementById("field");
 const clearButton = document.getElementById("clear-search");
 
-const paperPanel = document.getElementById("paper-panel");
+const paperDialog = document.getElementById("paper-dialog");
+const openDialogButton = document.getElementById("open-paper-dialog");
 const paperForm = document.getElementById("paper-form");
-const submitButton = document.getElementById("submit-button");
-const formError = document.getElementById("form-error");
 const paperIdField = document.getElementById("paper-id");
+const submitButton = document.getElementById("submit-button");
 const cancelButton = document.getElementById("cancel-edit");
 const formHeading = document.getElementById("form-heading");
+const formError = document.getElementById("form-error");
 
 const statusLine = document.getElementById("status");
+const saveMessage = document.getElementById("save-message");
 const resultsList = document.getElementById("results");
 const pager = document.getElementById("pager");
 const pageLabel = document.getElementById("page-label");
@@ -30,6 +34,24 @@ const nextButton = document.getElementById("next");
 
 const LIMIT = 24;
 const state = { q: "", field: "", yearFrom: "", yearTo: "", page: 1, totalPages: 1 };
+
+let savedTitles = new Set();
+
+function titleKey(title) {
+  return String(title || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+async function loadSavedTitles() {
+  try {
+    const payload = await getEntries();
+    savedTitles = new Set(payload.items.map((entry) => titleKey(entry.title)));
+  } catch {
+    savedTitles = new Set();
+  }
+}
 
 function showError(node, message) {
   node.textContent = message;
@@ -67,18 +89,21 @@ async function load() {
   setStatus(statusLine, "Loading the catalog...");
 
   try {
-    const payload = await getPapers({
-      q: state.q,
-      field: state.field,
-      yearFrom: state.yearFrom,
-      yearTo: state.yearTo,
-      page: state.page,
-      limit: LIMIT,
-    });
+    const [payload] = await Promise.all([
+      getPapers({
+        q: state.q,
+        field: state.field,
+        yearFrom: state.yearFrom,
+        yearTo: state.yearTo,
+        page: state.page,
+        limit: LIMIT,
+      }),
+      loadSavedTitles(),
+    ]);
 
     const { items, total, limit } = payload;
     state.totalPages = Math.max(1, Math.ceil(total / limit));
-    // Deleting the only card on the last page leaves that page empty. Step back.
+
     if (items.length === 0 && total > 0 && state.page > state.totalPages) {
       state.page = state.totalPages;
       await load();
@@ -95,7 +120,14 @@ async function load() {
     }
 
     items.forEach((paper) =>
-      resultsList.appendChild(paperCard(paper, { onEdit: startEdit, onDelete: remove }))
+      resultsList.appendChild(
+        paperCard(paper, {
+          onSave: saveToList,
+          onEdit: startEdit,
+          onDelete: remove,
+          saved: savedTitles.has(titleKey(paper.title)),
+        })
+      )
     );
 
     const first = (state.page - 1) * limit + 1;
@@ -144,6 +176,39 @@ function onClear() {
   load();
 }
 
+function toEntry(paper) {
+  return {
+    title: paper.title,
+    authors: shortAuthors(paper.authors).slice(0, 300),
+    year: paper.year ? String(paper.year) : "",
+    venue: (paper.venue || "").slice(0, 200),
+    status: "to-read",
+    priority: "medium",
+    tags: "",
+    note: "",
+  };
+}
+
+async function saveToList(paper, button) {
+  button.disabled = true;
+
+  try {
+    await createEntry(toEntry(paper));
+    savedTitles.add(titleKey(paper.title));
+    button.textContent = "Saved to list";
+    button.setAttribute("aria-label", paper.title + " is saved to your reading list");
+    setStatus(
+      saveMessage,
+      'Saved "' +
+        paper.title +
+        '" to your reading list. Open My reading list to add your note.'
+    );
+  } catch (error) {
+    button.disabled = false;
+    setStatus(saveMessage, "Could not save that paper. " + error.message, true);
+  }
+}
+
 function readPaperForm() {
   const data = new FormData(paperForm);
   const paper = {
@@ -170,8 +235,12 @@ function resetPaperForm() {
   paperIdField.value = "";
   formHeading.textContent = "Add a paper";
   submitButton.textContent = "Add paper";
-  cancelButton.hidden = true;
   hideError(formError);
+}
+
+function openAddDialog() {
+  resetPaperForm();
+  paperDialog.showModal();
 }
 
 function startEdit(paper) {
@@ -187,11 +256,9 @@ function startEdit(paper) {
 
   formHeading.textContent = "Edit paper";
   submitButton.textContent = "Save changes";
-  cancelButton.hidden = false;
   hideError(formError);
 
-  paperPanel.open = true;
-  paperPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  paperDialog.showModal();
   paperForm.elements.title.focus();
 }
 
@@ -202,11 +269,6 @@ async function remove(paper) {
 
   try {
     await deletePaper(paper._id);
-
-    if (paperIdField.value === paper._id) {
-      resetPaperForm();
-    }
-
     await load();
   } catch (error) {
     setStatus(statusLine, "Could not delete that paper. " + error.message, true);
@@ -230,17 +292,11 @@ async function onSavePaper(event) {
   try {
     if (editingId) {
       await updatePaper(editingId, paper);
-      resetPaperForm();
-      paperPanel.open = false;
-      // Reload with the current search, field, years and page unchanged.
+      paperDialog.close();
       await load();
     } else {
       await createPaper(paper);
-      resetPaperForm();
-      paperPanel.open = false;
-
-      // New papers have 0 citations, so they would sit on the last page of the
-      // default sort. Search for the title so the person sees it immediately.
+      paperDialog.close();
       searchForm.reset();
       searchForm.elements.q.value = paper.title;
       Object.assign(state, {
@@ -261,8 +317,18 @@ async function onSavePaper(event) {
 
 searchForm.addEventListener("submit", onSearch);
 clearButton.addEventListener("click", onClear);
+
+openDialogButton.addEventListener("click", openAddDialog);
+cancelButton.addEventListener("click", () => paperDialog.close());
 paperForm.addEventListener("submit", onSavePaper);
-cancelButton.addEventListener("click", resetPaperForm);
+
+paperDialog.addEventListener("close", resetPaperForm);
+
+paperDialog.addEventListener("click", (event) => {
+  if (event.target === paperDialog) {
+    paperDialog.close();
+  }
+});
 
 prevButton.addEventListener("click", () => {
   if (state.page > 1) {

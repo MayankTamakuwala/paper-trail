@@ -76,14 +76,33 @@
   cursor: not-allowed;
 }
 
-#paper-panel summary {
-  cursor: pointer;
-  font-weight: 600;
-  margin-bottom: 4px;
+.catalog-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin: 16px 0 8px;
 }
 
-#paper-panel[open] summary {
-  margin-bottom: 14px;
+.dialog {
+  width: min(640px, calc(100% - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 0;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.dialog::backdrop {
+  background: rgba(27, 29, 33, 0.5);
+}
+
+.dialog__body {
+  padding: 24px;
+}
+
+.dialog__body h2 {
+  margin-top: 0;
 }
 
 .paper-card a:focus-visible,
@@ -101,5 +120,9 @@
 
   .paper-card__actions .button {
     flex: 1;
+  }
+  .paper-card .button:disabled {
+    opacity: 0.6;
+    cursor: default;
   }
 }

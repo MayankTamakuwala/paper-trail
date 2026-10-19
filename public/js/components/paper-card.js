@@ -2,7 +2,7 @@ import { el } from "../dom.js";
 
 const ABSTRACT_LIMIT = 240;
 
-function shortAuthors(authors) {
+export function shortAuthors(authors) {
   if (!Array.isArray(authors) || authors.length === 0) {
     return "";
   }
@@ -22,7 +22,7 @@ function shortAbstract(text) {
   return text.slice(0, ABSTRACT_LIMIT).trimEnd() + "...";
 }
 
-export function paperCard(paper, { onEdit, onDelete } = {}) {
+export function paperCard(paper, { onSave, onEdit, onDelete, saved = false } = {}) {
   const card = el("li", "paper-card");
 
   card.appendChild(el("h3", "paper-card__title", paper.title));
@@ -57,17 +57,38 @@ export function paperCard(paper, { onEdit, onDelete } = {}) {
     link.href = paper.doi;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
+    link.setAttribute("aria-label", "Open " + paper.title + " (opens in a new tab)");
     footer.appendChild(link);
   }
 
   card.appendChild(footer);
 
-  if (onEdit || onDelete) {
+  if (onSave || onEdit || onDelete) {
     const actions = el("div", "paper-card__actions");
+
+    if (onSave) {
+      const save = el(
+        "button",
+        "button button--primary",
+        saved ? "Saved to list" : "Add to reading list"
+      );
+      save.type = "button";
+
+      if (saved) {
+        save.disabled = true;
+        save.setAttribute("aria-label", paper.title + " is saved to your reading list");
+      } else {
+        save.setAttribute("aria-label", "Add " + paper.title + " to your reading list");
+        save.addEventListener("click", () => onSave(paper, save));
+      }
+
+      actions.appendChild(save);
+    }
 
     if (onEdit) {
       const edit = el("button", "button", "Edit");
       edit.type = "button";
+      edit.setAttribute("aria-label", "Edit " + paper.title);
       edit.addEventListener("click", () => onEdit(paper));
       actions.appendChild(edit);
     }
@@ -75,6 +96,7 @@ export function paperCard(paper, { onEdit, onDelete } = {}) {
     if (onDelete) {
       const remove = el("button", "button button--danger", "Delete");
       remove.type = "button";
+      remove.setAttribute("aria-label", "Delete " + paper.title);
       remove.addEventListener("click", () => onDelete(paper));
       actions.appendChild(remove);
     }
