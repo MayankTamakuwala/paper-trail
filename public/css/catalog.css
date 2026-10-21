@@ -107,7 +107,6 @@
 
 .paper-card a:focus-visible,
 .paper-card button:focus-visible,
-#paper-panel summary:focus-visible,
 .pager button:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 2px;
