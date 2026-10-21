@@ -18,7 +18,14 @@ export async function getDb() {
     cache.promise = new MongoClient(uri, { maxPoolSize: 10 }).connect();
   }
 
-  cache.client = await cache.promise;
+  try {
+    cache.client = await cache.promise;
+  } catch (error) {
+    // Let the next request retry
+    cache.promise = null;
+    throw error;
+  }
+
   return cache.client.db(DB_NAME);
 }
 
