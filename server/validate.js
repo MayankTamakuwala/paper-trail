@@ -17,7 +17,8 @@ function text(value, label, { required = false, max = 300 } = {}) {
     if (required) {
       throw new ValidationError(label + " is required");
     }
-    return undefined;
+    // "" clears the field on edit
+    return value === "" ? "" : undefined;
   }
 
   if (typeof value !== "string") {
@@ -38,8 +39,12 @@ function text(value, label, { required = false, max = 300 } = {}) {
 }
 
 function year(value) {
-  if (value === undefined || value === null || value === "") {
+  if (value === undefined || value === null) {
     return undefined;
+  }
+
+  if (value === "") {
+    return null;
   }
 
   const parsed = Number(value);
@@ -127,7 +132,7 @@ export function validateEntry(body, { partial = false } = {}) {
   }
 
   const entry = {};
-  const required = !partial;
+  const required = !partial || body.title !== undefined;
 
   const title = text(body.title, "Title", { required, max: 300 });
   if (title !== undefined) {
@@ -181,7 +186,7 @@ export function validatePaper(body, { partial = false } = {}) {
   }
 
   const paper = {};
-  const required = !partial;
+  const required = !partial || body.title !== undefined;
 
   const title = text(body.title, "Title", { required, max: 300 });
   if (title !== undefined) {
