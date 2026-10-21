@@ -220,12 +220,8 @@ function readPaperForm() {
     venue: String(data.get("venue") || "").trim(),
     doi: String(data.get("doi") || "").trim(),
     abstract: String(data.get("abstract") || "").trim(),
+    year: String(data.get("year") || "").trim(),
   };
-
-  const year = String(data.get("year") || "").trim();
-  if (year) {
-    paper.year = Number(year);
-  }
 
   return paper;
 }

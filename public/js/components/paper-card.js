@@ -22,6 +22,15 @@ function shortAbstract(text) {
   return text.slice(0, ABSTRACT_LIMIT).trimEnd() + "...";
 }
 
+function doiHref(doi) {
+  if (/^https?:\/\//i.test(doi)) {
+    return doi;
+  }
+
+  // Bare DOI such as 10.1145/3292500
+  return /^10\.\d+\//.test(doi) ? "https://doi.org/" + doi : "";
+}
+
 export function paperCard(paper, { onSave, onEdit, onDelete, saved = false } = {}) {
   const card = el("li", "paper-card");
 
@@ -52,9 +61,11 @@ export function paperCard(paper, { onSave, onEdit, onDelete, saved = false } = {
     )
   );
 
-  if (paper.doi) {
+  const href = paper.doi ? doiHref(paper.doi) : "";
+
+  if (href) {
     const link = el("a", "", "Link");
-    link.href = paper.doi;
+    link.href = href;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
     link.setAttribute("aria-label", "Open " + paper.title + " (opens in a new tab)");

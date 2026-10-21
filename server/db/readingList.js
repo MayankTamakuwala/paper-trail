@@ -27,7 +27,14 @@ export async function listEntries(userId, { status, sort }) {
   }
 
   const collection = await entries();
-  return collection.find(filter).sort(sortOrder(sort)).toArray();
+  const cursor = collection.find(filter).sort(sortOrder(sort));
+
+  // Case-insensitive title order
+  if (sort === "title") {
+    cursor.collation({ locale: "en" });
+  }
+
+  return cursor.toArray();
 }
 
 export async function countByStatus(userId) {
