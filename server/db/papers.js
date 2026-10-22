@@ -7,7 +7,7 @@ async function papers() {
   return getCollection(COLLECTION);
 }
 
-export async function searchPapers({ query, field, yearFrom, yearTo, limit, skip }) {
+export async function searchPapers({ query, field, yearFrom, yearTo, limit, skip, sort }) {
   const filter = {};
 
   if (query) {
@@ -26,9 +26,18 @@ export async function searchPapers({ query, field, yearFrom, yearTo, limit, skip
     if (yearTo) filter.year.$lte = yearTo;
   }
 
+  const sortOptions = {
+    citations: { citationCount: -1, _id: 1 },
+    newest: { year: -1, _id: 1 },
+    oldest: { year: 1, _id: 1 },
+    "title-asc": { title: 1, _id: 1 },
+    "title-desc": { title: -1, _id: 1 },
+  };
+
+  const sortOrder = sortOptions[sort] || sortOptions.citations;
   const collection = await papers();
   const [items, total] = await Promise.all([
-    collection.find(filter).sort({ citationCount: -1 }).skip(skip).limit(limit).toArray(),
+    collection.find(filter).sort(sortOrder).skip(skip).limit(limit).toArray(),
     collection.countDocuments(filter),
   ]);
 
